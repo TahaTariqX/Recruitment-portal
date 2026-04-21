@@ -340,11 +340,11 @@ export default function App() {
 
   // ── top-level flow helpers ──
   const STEPS = [
-    { id:"basic", label:"Basic info" },
-    { id:"role",  label:"Role" },
-    ...(role==="interpreter"||role==="both" ? [{id:"interpreter",label:"Interpreter"}] : []),
-    ...(role==="translator"||role==="both"  ? [{id:"translator", label:"Translator" }] : []),
-    { id:"review", label:"Review" },
+    { id:"basic",  label:"Basic info", sub:"Your details" },
+    { id:"role",   label:"Role",       sub:"Choose one" },
+    ...(role==="interpreter"||role==="both" ? [{id:"interpreter",label:"Interpreter", sub:"Live services"}] : []),
+    ...(role==="translator"||role==="both"  ? [{id:"translator", label:"Translator",  sub:"Written services" }] : []),
+    { id:"review", label:"Review",     sub:"Confirm & submit" },
   ]
   const curIdx = Math.max(0, STEPS.findIndex(s=>s.id===step))
 
@@ -693,34 +693,73 @@ export default function App() {
 
           {/* Mobile stepper */}
           <div className="md:hidden mb-6">
-            <div className="flex justify-between items-center text-xs mb-2">
-              <span className="font-medium text-gray-900">Step {curIdx+1} of {STEPS.length}</span>
-              <span className="text-gray-500">{STEPS[curIdx].label}</span>
+            <div className="flex justify-between items-baseline mb-2">
+              <div className="flex items-baseline gap-2">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-400">Step {curIdx+1} / {STEPS.length}</span>
+                <span className="text-[13px] font-medium text-gray-900">{STEPS[curIdx].label}</span>
+              </div>
+              <span className="text-[11px] text-gray-400">{STEPS[curIdx].sub}</span>
             </div>
-            <Progress value={((curIdx+1)/STEPS.length)*100}/>
+            <Progress value={((curIdx+1)/STEPS.length)*100} className="h-1.5"/>
           </div>
 
           {/* Desktop stepper */}
-          <div className="hidden md:flex items-center gap-1.5 mb-8 px-2">
-            {STEPS.map((s,i)=>(
-              <React.Fragment key={s.id}>
-                <div className="flex items-center gap-[7px] flex-shrink-0">
-                  <div className={cn(
-                    "w-6 h-6 rounded-full border-[1.5px] flex items-center justify-center text-[11px] font-semibold",
-                    i===curIdx ? "border-[#1a1a2e] bg-[#1a1a2e] text-white" :
-                    i<curIdx   ? "border-[#1a6b3a] bg-[#1a6b3a] text-white" :
-                                 "border-gray-200 text-gray-400"
-                  )}>
-                    {i<curIdx ? "✓" : i+1}
-                  </div>
-                  <span className={cn(
-                    "text-xs",
-                    i===curIdx ? "text-gray-900 font-medium" : "text-gray-400"
-                  )}>{s.label}</span>
-                </div>
-                {i<STEPS.length-1 && <div className={cn("flex-1 h-px transition-colors", i<curIdx ? "bg-[#1a6b3a]" : "bg-gray-100")}/>}
-              </React.Fragment>
-            ))}
+          <div className="hidden md:flex items-start gap-2 mb-10 px-1">
+            {STEPS.map((s,i)=>{
+              const done = i < curIdx
+              const active = i === curIdx
+              const clickable = done
+              return (
+                <React.Fragment key={s.id}>
+                  <button
+                    type="button"
+                    onClick={()=>{ if(clickable) setStep(s.id) }}
+                    disabled={!clickable}
+                    className={cn(
+                      "group flex items-center gap-2.5 flex-shrink-0 pt-0.5 transition-opacity",
+                      clickable ? "cursor-pointer hover:opacity-80" : "cursor-default"
+                    )}
+                  >
+                    {/* Circle */}
+                    <div className={cn(
+                      "relative w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-semibold transition-all duration-200",
+                      done   && "bg-emerald-600 text-white shadow-sm group-hover:shadow",
+                      active && "bg-[#1a1a2e] text-white shadow-[0_0_0_4px_rgba(26,26,46,0.08)]",
+                      !done && !active && "bg-white text-gray-400 border border-gray-200"
+                    )}>
+                      {done ? (
+                        <svg width="11" height="9" viewBox="0 0 11 9" fill="none"><path d="M1 4.5l3 3L10 1" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                      ) : (
+                        i+1
+                      )}
+                    </div>
+                    {/* Label + sub */}
+                    <div className="flex flex-col items-start text-left leading-tight">
+                      <span className={cn(
+                        "text-[13px] transition-colors",
+                        active ? "text-gray-900 font-semibold" :
+                        done   ? "text-gray-700 font-medium" :
+                                 "text-gray-400 font-medium"
+                      )}>{s.label}</span>
+                      <span className={cn(
+                        "text-[10.5px] transition-colors",
+                        active ? "text-gray-500" :
+                        done   ? "text-gray-400" :
+                                 "text-gray-300"
+                      )}>{s.sub}</span>
+                    </div>
+                  </button>
+                  {i<STEPS.length-1 && (
+                    <div className="flex-1 h-[2px] mt-[14px] rounded-full overflow-hidden bg-gray-100">
+                      <div className={cn(
+                        "h-full transition-all duration-500",
+                        done ? "w-full bg-emerald-600" : "w-0"
+                      )}/>
+                    </div>
+                  )}
+                </React.Fragment>
+              )
+            })}
           </div>
         </div>
 
@@ -907,21 +946,14 @@ export default function App() {
             {langReady && pairs.length>0 && (
               <div className="w-full md:max-w-[70vw] mx-auto px-4 md:px-6 pt-1 pb-4">
                 {pairsBannerShown && (
-                  <div className="mb-3 rounded-md border border-blue-200 bg-blue-50 px-4 py-3 flex items-start gap-3">
-                    <div className="flex-shrink-0 text-blue-600 mt-0.5">
-                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.3"/><path d="M8 7.5v4M8 5v-.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>
-                    </div>
-                    <div className="flex-1 text-[12.5px] leading-relaxed text-blue-900">
-                      <p className="font-semibold mb-1">How this works</p>
-                      <ul className="space-y-0.5 text-blue-800/90">
-                        <li>• <strong>Click a pair</strong> to expand its rate table</li>
-                        <li>• <strong>Edit any rate or speed</strong> directly in the cells — changes save automatically</li>
-                        <li>• <strong>Hover a cell</strong> to mark it as "Not offered" or reset an override</li>
-                        <li>• Use the <strong>trash icons</strong> to remove pairs, services, or specialisations</li>
-                      </ul>
-                    </div>
-                    <button type="button" onClick={dismissPairsBanner} aria-label="Dismiss" className="flex-shrink-0 text-blue-400 hover:text-blue-700 transition-colors w-6 h-6 flex items-center justify-center rounded hover:bg-blue-100">
-                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1 1l10 10M11 1L1 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                  <div className="mb-3 rounded-md border border-blue-200 bg-blue-50 px-3 py-2 flex items-center gap-2.5 text-[12px] text-blue-900">
+                    <svg width="13" height="13" viewBox="0 0 16 16" fill="none" className="flex-shrink-0 text-blue-600"><circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.3"/><path d="M8 7.5v4M8 5v-.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>
+                    <p className="flex-1 leading-snug">
+                      <span className="font-semibold">Tip:</span>{" "}
+                      <span className="text-blue-800/90">Click a pair to expand · edit rates inline · hover cells for "Not offered" / reset · trash icons remove items.</span>
+                    </p>
+                    <button type="button" onClick={dismissPairsBanner} aria-label="Dismiss" className="flex-shrink-0 text-blue-400 hover:text-blue-700 w-5 h-5 flex items-center justify-center rounded hover:bg-blue-100 transition-colors">
+                      <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M1 1l10 10M11 1L1 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
                     </button>
                   </div>
                 )}
