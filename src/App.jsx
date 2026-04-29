@@ -39,8 +39,7 @@ const LANG_GROUPS = [
 ]
 const PRESET_SPECS = ["Commercial law","Criminal law","Family law","Labor law","IP law","Medical","Technical","Financial","Marketing","Environmental law","IT / Software","Literary"]
 const PRESET_SVCS  = ["Translation","Journalistic editor","Proofreading","Lectorate"]
-const INDUSTRIES   = ["Healthcare","Law & Compliance","Finance & Banking","Technology","Automotive","Energy","Education","Retail & E-commerce","Government & Public Sector"]
-const CC_LIST = [["+49","🇩🇪"],["+1","🇺🇸"],["+44","🇬🇧"],["+33","🇫🇷"],["+34","🇪🇸"],["+39","🇮🇹"],["+31","🇳🇱"],["+48","🇵🇱"],["+7","🇷🇺"],["+90","🇹🇷"],["+20","🇪🇬"],["+966","🇸🇦"],["+86","🇨🇳"],["+91","🇮🇳"],["+55","🇧🇷"],["+52","🇲🇽"],["+81","🇯🇵"],["+82","🇰🇷"],["+61","🇦🇺"],["+27","🇿🇦"],["+380","🇺🇦"],["+40","🇷🇴"],["+36","🇭🇺"],["+45","🇩🇰"],["+46","🇸🇪"],["+47","🇳🇴"],["+358","🇫🇮"],["+41","🇨🇭"],["+43","🇦🇹"],["+32","🇧🇪"],["+351","🇵🇹"],["+30","🇬🇷"],["+420","🇨🇿"],["+421","🇸🇰"],["+385","🇭🇷"],["+359","🇧🇬"],["+372","🇪🇪"],["+371","🇱🇻"],["+370","🇱🇹"]]
+const CC_LIST = [["+49","🇩🇪","Germany"],["+1","🇺🇸","United States"],["+44","🇬🇧","United Kingdom"],["+33","🇫🇷","France"],["+34","🇪🇸","Spain"],["+39","🇮🇹","Italy"],["+31","🇳🇱","Netherlands"],["+48","🇵🇱","Poland"],["+7","🇷🇺","Russia"],["+90","🇹🇷","Turkey"],["+20","🇪🇬","Egypt"],["+966","🇸🇦","Saudi Arabia"],["+86","🇨🇳","China"],["+91","🇮🇳","India"],["+55","🇧🇷","Brazil"],["+52","🇲🇽","Mexico"],["+81","🇯🇵","Japan"],["+82","🇰🇷","South Korea"],["+61","🇦🇺","Australia"],["+27","🇿🇦","South Africa"],["+380","🇺🇦","Ukraine"],["+40","🇷🇴","Romania"],["+36","🇭🇺","Hungary"],["+45","🇩🇰","Denmark"],["+46","🇸🇪","Sweden"],["+47","🇳🇴","Norway"],["+358","🇫🇮","Finland"],["+41","🇨🇭","Switzerland"],["+43","🇦🇹","Austria"],["+32","🇧🇪","Belgium"],["+351","🇵🇹","Portugal"],["+30","🇬🇷","Greece"],["+420","🇨🇿","Czechia"],["+421","🇸🇰","Slovakia"],["+385","🇭🇷","Croatia"],["+359","🇧🇬","Bulgaria"],["+372","🇪🇪","Estonia"],["+371","🇱🇻","Latvia"],["+370","🇱🇹","Lithuania"]]
 const WIZ_META = [
   { title:"Are you an individual or an agency?",  sub:"This determines how we set up your language pairs." },
   { title:"What is your mother tongue?",           sub:"Select up to 2 native languages — these become your target languages." },
@@ -195,6 +194,7 @@ export default function App() {
   const [password,setPassword]   = useState("")
   const [passwordConfirm,setPasswordConfirm] = useState("")
   const [cc,setCc]               = useState("+49")
+  const [ccOpen,setCcOpen]       = useState(false)
   const [phone,setPhone]         = useState("")
   const [country,setCountry]     = useState("")
   const [address,setAddress]     = useState("")
@@ -211,8 +211,6 @@ export default function App() {
   const [catOther,setCatOther]   = useState("")
   const [workload,setWorkload]   = useState("")
   const [yearsExp,setYearsExp]   = useState("")
-  const [industries,setInds]     = useState([])
-  const [indOpen,setIndOpen]     = useState(false)
   const [pairs,setPairs]         = useState([])
   const [langReady,setLangReady] = useState(false)
 
@@ -783,10 +781,31 @@ export default function App() {
             <FormRow label="Confirm password" required><Input type="password" value={passwordConfirm} onChange={e=>setPasswordConfirm(e.target.value)}/></FormRow>
             <FormRow label="Mobile number" required top hint="Enter your mobile number including country code.">
               <div style={{display:"flex"}}>
-                <Select value={cc} onValueChange={setCc}>
-                  <SelectTrigger style={{width:110,borderRadius:"6px 0 0 6px",borderRight:"none",background:"var(--color-background-secondary)",flexShrink:0}}><SelectValue/></SelectTrigger>
-                  <SelectContent>{CC_LIST.map(([code,flag])=><SelectItem key={code} value={code}>{flag} {code}</SelectItem>)}</SelectContent>
-                </Select>
+                <Popover open={ccOpen} onOpenChange={setCcOpen}>
+                  <PopoverTrigger asChild>
+                    <button type="button" style={{width:110,borderRadius:"6px 0 0 6px",border:"1px solid var(--color-border-secondary)",borderRight:"none",background:"var(--color-background-secondary)",flexShrink:0,height:36,padding:"0 10px",display:"flex",alignItems:"center",justifyContent:"space-between",fontSize:13.5,cursor:"pointer"}}>
+                      <span>{(CC_LIST.find(([c])=>c===cc)?.[1]||"")} {cc}</span>
+                      <span style={{fontSize:10,color:"var(--color-text-tertiary)"}}>▾</span>
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent style={{width:260,padding:0}} align="start">
+                    <Command>
+                      <CommandInput placeholder="Search country or code..."/>
+                      <CommandList>
+                        <CommandEmpty>No country found.</CommandEmpty>
+                        <CommandGroup>
+                          {CC_LIST.map(([code,flag,name])=>(
+                            <CommandItem key={code} value={`${name} ${code}`} onSelect={()=>{setCc(code);setCcOpen(false)}}>
+                              <span style={{marginRight:8}}>{flag}</span>
+                              <span style={{flex:1}}>{name}</span>
+                              <span style={{color:"var(--color-text-tertiary)",fontSize:12}}>{code}</span>
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
                 <Input type="tel" value={phone} onChange={e=>setPhone(e.target.value)} placeholder="Phone number" style={{borderRadius:"0 6px 6px 0"}}/>
               </div>
             </FormRow>
@@ -987,35 +1006,6 @@ export default function App() {
                   <SelectContent>{["Under 1 year","1–3 years","3–5 years","5–10 years","Over 10 years"].map(o=><SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
                 </Select>
               </FormRow>
-              <FormRow label="Specialist industry experience" top>
-                <Popover open={indOpen} onOpenChange={setIndOpen}>
-                  <PopoverTrigger asChild>
-                    <div style={{border:"1px solid var(--color-border-secondary)",borderRadius:6,minHeight:36,padding:"3px 10px",display:"flex",alignItems:"center",gap:5,cursor:"pointer",background:"var(--color-background-primary)",flexWrap:"wrap",fontSize:13.5}}>
-                      {industries.length===0&&<span style={{color:"var(--color-text-tertiary)"}}>Select industries</span>}
-                      {industries.map(ind=><span key={ind} style={{...S.tagBlue,fontSize:12}}>{ind}<button type="button" onClick={e=>{e.stopPropagation();setInds(p=>p.filter(i=>i!==ind))}} style={{background:"none",border:"none",cursor:"pointer",color:"#93c5fd",fontSize:13,lineHeight:1,padding:0}}>×</button></span>)}
-                      <span style={{marginLeft:"auto",fontSize:10,color:"var(--color-text-tertiary)"}}>▾</span>
-                    </div>
-                  </PopoverTrigger>
-                  <PopoverContent style={{width:280,padding:0}}>
-                    <Command>
-                      <CommandInput placeholder="Search industries..."/>
-                      <CommandList>
-                        <CommandEmpty>No industries found.</CommandEmpty>
-                        <CommandGroup>
-                          {INDUSTRIES.map(ind=>(
-                            <CommandItem key={ind} value={ind} onSelect={()=>setInds(p=>p.includes(ind)?p.filter(i=>i!==ind):[...p,ind])}>
-                              <div style={{width:14,height:14,borderRadius:2,border:`1px solid ${industries.includes(ind)?"#1a1a2e":"var(--color-border-secondary)"}`,background:industries.includes(ind)?"#1a1a2e":"transparent",display:"flex",alignItems:"center",justifyContent:"center",marginRight:8,flexShrink:0}}>
-                                {industries.includes(ind)&&<svg width="8" height="6" viewBox="0 0 8 6" fill="none"><path d="M1 3l2 2 4-4" stroke="white" strokeWidth="1.3" strokeLinecap="round"/></svg>}
-                              </div>
-                              {ind}
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-              </FormRow>
             </div>
           </>
         )}
@@ -1098,7 +1088,6 @@ export default function App() {
                     <dt className="text-gray-400">CAT tools</dt><dd>{catTools.map(t=>t==="Other"&&catOther?`Other (${catOther})`:t).join(", ")||"—"}</dd>
                     <dt className="text-gray-400">Workload</dt><dd>{workload}</dd>
                     <dt className="text-gray-400">Years experience</dt><dd>{yearsExp}</dd>
-                    <dt className="text-gray-400">Industries</dt><dd>{industries.join(", ")||"—"}</dd>
                   </dl>
                 </CardContent>
               </Card>
