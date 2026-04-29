@@ -669,21 +669,10 @@ export default function App() {
     <div style={{position:"relative",height:"100vh",overflow:"hidden",background:"#f0f2f5",fontFamily:"-apple-system,'Helvetica Neue',sans-serif"}}>
       <div style={{height:"100%",overflowY:"auto"}}>
 
-        {/* Navbar */}
-        <nav className="bg-white border-b border-gray-100 px-3 md:px-6 h-12 flex items-center justify-between flex-shrink-0">
-          <div className="flex items-center gap-1.5">
-            <div className="bg-[#1a1a2e] text-white font-extrabold text-[15px] px-[7px] py-[3px] rounded tracking-tight">
-              <span className="text-[#e63946]">24</span>
-            </div>
-            <span className="text-sm text-gray-500 font-medium tracking-wider">translate</span>
-          </div>
-          <div className="hidden lg:flex gap-5 items-center">
-            {["Candidates","Pending Actions","Statistics","Blocked Applications","Settings","Reasons for Rejection"].map(l=>(
-              <span key={l} className="text-[13px] text-gray-500 cursor-pointer whitespace-nowrap">{l}</span>
-            ))}
-          </div>
-          <span className="text-[13px] text-gray-500 font-medium cursor-pointer">Taha Tariq ▾</span>
-        </nav>
+        {/* Header */}
+        <header className="bg-white border-b border-gray-100 px-4 md:px-8 h-14 flex items-center flex-shrink-0">
+          <img src="/logo.svg" alt="Tolk 24t" className="h-[18px] w-auto"/>
+        </header>
 
         {/* Title + Progress header */}
         <div className="max-w-[760px] mx-auto px-4 pt-6 md:pt-9">
